@@ -1,0 +1,9 @@
+---
+- android_id: XXXX
+  email: test@test.com
+  password: password
+  db: /home/user/apk.db
+  directory: /home/user/apks
+  apks:
+  - com.lingualeo.android
+  - org.coolreader

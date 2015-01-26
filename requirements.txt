@@ -1,0 +1,5 @@
+colorama
+requests
+PyYAML
+protobuf
+clint
