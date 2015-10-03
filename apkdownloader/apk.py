@@ -39,7 +39,7 @@ DESCRIPTION_TEXT = """
     the current directory and in the home directory of the current user.
     In the case of many config files are being found they will be meld in the
     next order (home directory, current directory, command line argument).
-    Example of config file: apk_config.yml
+    Example of config file: apk_config_example.yml
 """.format(DEFAULT_CONFIG_FILENAME)
 
 
@@ -169,12 +169,31 @@ def show_packages_info(new_apks_info, current_apks):
                 format(apk_info, sizeof_fmt(apk_info.size)), Fore.YELLOW)
 
 
+def delete_old_package_versions(directory, filenames):
+    for root, dirs, files in os.walk(directory):
+        files_to_delete = [
+            os.path.join(root, stored_filename) for stored_filename in files
+            for file_prefix, filename in filenames
+            if filename != os.path.join(root, stored_filename) and
+            stored_filename.startswith(file_prefix)
+        ]
+        for file_to_delete in files_to_delete:
+            try:
+                os.remove(file_to_delete)
+                logger.info('Deleted old file {0}'.format(file_to_delete))
+            except (OSError, IOError) as ex:
+                logger.error(
+                    'Cannot delete file {0}: {1}'.format(file_to_delete, ex))
+
+
 def download_packages(api, packages_info, options):
     db = options["db"]
     dry_run = options["dry_run"]
     directory = options["directory"]
-    apks_directory = os.path.abspath(directory)
-    for name in sorted(packages_info.keys()):
+    apks_directory = os.path.normpath(os.path.abspath(directory))
+    packages_names = sorted(packages_info.keys())
+    filenames = []
+    for name in packages_names:
         info = packages_info[name]
         _print_color_line(
             "Apk file {0} should be updated to version {1}".
@@ -186,6 +205,7 @@ def download_packages(api, packages_info, options):
             stream = api.download(name, info.code, info.offer, stream=True)
             filename = os.path.join(
                 apks_directory, "{0}.{1}.apk".format(name, info.version))
+            filenames.append(filename)
             with open(filename, 'wb') as f:
                 total_length = int(stream.headers.get('content-length'))
                 expected_size = total_length / DOWNLOAD_CHUNK_SIZE + 1
@@ -195,6 +215,8 @@ def download_packages(api, packages_info, options):
                     if chunk:
                         f.write(chunk)
                         f.flush()
+        delete_old_package_versions(
+            apks_directory, zip(packages_names, filenames))
         update_apk_info(db, info)
 
 

@@ -1,4 +1,4 @@
-coursera-asyncio-downloader
+apkdownloader
 ====================================
 
 Apk downloader using Google Play API.
