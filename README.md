@@ -17,14 +17,13 @@ Dependencies
 
 Install
 ------------------------------------
-
+    pip install --user git+https://github.com/trezorg/apkdownloader.git
+    
+    or
+    
     git clone https://github.com/trezorg/apkdownloader.git
     cd apkdownloader
-    python setup.py install
-
-    or
-
-    pip install . --user
+    python setup.py install or pip install . --user
 
 
 Using
